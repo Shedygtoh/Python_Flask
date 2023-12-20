@@ -1,0 +1,39 @@
+pipeline {
+    agent any
+    stages {
+        stage('Checkout') {
+            steps {
+                checkout scm
+            }
+        }
+        stage('Run Backend') {
+            steps {
+                sh 'python rest_app.py'
+            }
+        }
+        stage('Run Frontend') {
+            steps {
+                sh 'python web_app.py'
+            }
+        }
+        stage('Run Tests') {
+            steps {
+                sh 'python backend_testing.py'
+                sh 'python frontend_testing.py'
+                sh 'python combined_testing.py'
+            }
+        }
+        stage('Cleanup') {
+            steps {
+                sh 'python clean_environment.py'
+            }
+        }
+    }
+    post {
+        failure {
+            mail to: 'shedygoth8@gmail.com.com',
+                subject: "Failed Pipeline: ${currentBuild.fullDisplayName}",
+                body: "Something is wrong with the build: ${currentBuild.absoluteUrl}"
+        }
+    }
+}
